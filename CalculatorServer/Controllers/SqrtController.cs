@@ -1,22 +1,18 @@
 ﻿
-using Microsoft.AspNetCore.Components;
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
+using Newtonsoft.Json;
+
 
 namespace CalculatorServer.Controllers
 {
-	[Microsoft.AspNetCore.Mvc.ApiController]
-	[Microsoft.AspNetCore.Mvc.Route("/sqrt")]
-	public class SqrtController : Microsoft.AspNetCore.Mvc.ControllerBase
+	[ApiController]
+	[Route("/sqrt")]
+	public class SqrtController : ControllerBase
 	{
 		private readonly ILogger<SqrtController> _logger;
 
@@ -25,49 +21,76 @@ namespace CalculatorServer.Controllers
 			_logger = logger;
 		}
 		[Microsoft.AspNetCore.Mvc.HttpPost]
-		public SqrtResponse Sqrt([System.Web.Http.FromBody] SqrtRequest sqrt) //HttpResponseMessage
+		public string Sqrt([System.Web.Http.FromBody] SqrtRequest sqrt) 
 		{
-			_logger.LogTrace("user ");
+			_logger.LogInformation("user using sqrt ");
 			var headers = Request.Headers;
 			string key = "";
-			SqrtResponse sqrtresponse=new SqrtResponse {
-			Square=0};
-			StringValues values;
-			if (headers.ContainsKey("X-Evi-Tracking-Id"))
+			var response="";
+			if (sqrt.Number.HasValue)
 			{
-				headers.TryGetValue("X-Evi-Tracking-Id", out values);
-				key = values.First();
-			}
+				SqrtResponse sqrtresponse = new SqrtResponse
+				{
+					Square = 0
+				};
+				StringValues values;
+				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				{
+					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					key = values.First();
+				}
 
+				if (sqrt.Number < 1)
+				{
+					Error error = new Error
+					{
+						ErrorCode = "Bad Request",
+						ErrorMessage = "Error cant do a negative square root",
+						ErrorStatus = 400
 
-			if (sqrt.Number < 1)
-			{
-				var message = "Error number menor que 0";// string.Format("Valor desde","");
-				//return new HttpResponseMessage();//Request.CreateErrorResponse(HttpStatusCode.BadRequest, message);
+					};
+
+					response = JsonConvert.SerializeObject(error);
+					Response.StatusCode = error.ErrorStatus;
+
+				}
+				else
+				{
+					sqrtresponse = new SqrtResponse
+					{
+						Square = (float)Math.Sqrt(sqrt.Number.Value)
+					};
+
+					if (!key.Equals(""))
+					{
+						Operation p = new Operation
+						{
+							Calculation = "Sqrt",
+							Oper = " Sqrt " + sqrt.Number.Value + " =" + sqrtresponse.Square,
+							Date = Request.Headers.ContainsKey("Date").ToString()
+						};
+						Persistence.Add(key, p);
+
+					}
+					_logger.LogInformation("Sqrt success");
+					response = JsonConvert.SerializeObject(sqrtresponse);
+				}
 			}
 			else
 			{
-				sqrtresponse = new SqrtResponse
+				_logger.LogError("Error number is null ");
+				Error error = new Error
 				{
-					Square = (float)Math.Sqrt(sqrt.Number)
+					ErrorCode = "Bad Request",
+					ErrorMessage = "Error Number is null",
+					ErrorStatus = 400
 				};
-
-				if (!key.Equals(""))
-				{
-					Operation p = new Operation
-					{
-						Calculation = "Sqrt",
-						Oper = " Sqrt " + sqrt.Number + " =" + sqrtresponse.Square,
-						Date = Request.Headers.ContainsKey("Date").ToString()
-					};
-					Persistence.Add(key, p);
-				}
-				return sqrt;
-				//return Request.CreateResponse(HttpStatusCode.OK, sqrtresponse);
+				//throw DivideByZeroException();
+				Response.StatusCode = error.ErrorStatus;
+				response = JsonConvert.SerializeObject(error);
 			}
-
+			return response;
 		}
-
 
 	}
 }

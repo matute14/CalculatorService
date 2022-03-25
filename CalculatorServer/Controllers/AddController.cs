@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+
+
 
 namespace CalculatorServer.Controllers
 {
@@ -42,34 +43,56 @@ namespace CalculatorServer.Controllers
 		}
 		*/
 		[HttpPost]
-		public Suma Sumar([FromBody] Add lista)
+		public string Sumar([FromBody] AddRequest lista)
 		{
-			_logger.LogTrace("pepe");
+			_logger.LogInformation("user add operation");
 			var headers = Request.Headers;
 			string key="";
+			var response = "";
 			StringValues values;
-			if (headers.ContainsKey("X-Evi-Tracking-Id"))
+			if (lista.Addens != null)
 			{
-				headers.TryGetValue("X-Evi-Tracking-Id",out values);
-				key = values.First();
-			}
+				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				{
+					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					key = values.First();
+				}
 
-			Suma sum=new Suma
-			{
-				Sum = lista.Addens.Sum()
-			};
-
-			if (!key.Equals(""))
-			{
-				Operation p = new Operation {
-				Oper="Sum",
-				Calculation= string.Join("+",lista.Addens)+"="+sum.Sum,
-				Date= DateTime.Now.ToString()
+				AddResponse sum = new AddResponse
+				{
+					Sum = lista.Addens.Sum()
 				};
 
-				Persistence.Add(key,p);
+				if (!key.Equals(""))
+				{
+					Operation p = new Operation
+					{
+						Oper = "Sum",
+						Calculation = string.Join("+", lista.Addens) + "=" + sum.Sum,
+						Date = DateTime.Now.ToString()
+					};
+
+					Persistence.Add(key, p);
+				}
+				_logger.LogInformation("Add Succees");
+				response = JsonConvert.SerializeObject(sum);
+
 			}
-			return sum;
+			else
+			{
+				_logger.LogError("Bad request addens is null");
+				Error error = new Error
+				{
+
+					ErrorCode = "Bad Request",
+					ErrorMessage = "Error addens is null",
+					ErrorStatus = 400
+				};
+				//throw DivideByZeroException();
+				Response.StatusCode = error.ErrorStatus;
+				response= JsonConvert.SerializeObject(error);
+			}
+			return response;
 
 		}
 	}

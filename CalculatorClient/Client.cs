@@ -1,29 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Models;
 
 namespace CalculatorClient
 {
-	/*
-	public class Addens
-	{
-		public List<float> Adden { get; set; }
-	}
-	*/
+
 	public class Client
 	{
 
 		public static HttpClient client = new HttpClient();
 		public static string idTracking = "";
-		private static int opc;
 
 		public static void Main(string[] args)
 		{
@@ -33,23 +22,25 @@ namespace CalculatorClient
 		public static void Menu()
 		{
 
-
+			int opc;
 			do
 			{
-				Console.WriteLine("0 Salir:");
-				Console.WriteLine("1 Suma:");
-				Console.WriteLine("2 Resta:");
-				Console.WriteLine("3 Multiplicacion:");
-				Console.WriteLine("4 Division:");
-				Console.WriteLine("5 Raiz cuadrada:");
-				Console.WriteLine("6 Historial:");
-				Console.Write("quieres persistir las operaciones");
+				Console.WriteLine(
+				@"0 Salir:
+				1 Suma:
+				2 Resta:
+				3 Multiplicacion
+				4 Division:
+				5 Raiz cuadrada:
+				6 Historial:");
+
+				Console.Write("quieres persistir las operaciones : ");
 				if (Console.ReadLine().Equals("s"))
 				{
 					Console.Write("Dime id");
 					idTracking = Console.ReadLine();
 				}
-				Console.Write("eliga numero");
+				Console.Write("Elija numero");
 				string num = Console.ReadLine();
 				bool validacion = Int32.TryParse(num, out opc);
 				if (!validacion)
@@ -94,7 +85,7 @@ namespace CalculatorClient
 		{
 			string id;
 
-			Console.WriteLine("Dime el id que quieres ver historial");
+			Console.WriteLine("Dime el id del que quieres ver historial");
 			id = Console.ReadLine();
 			var myContent = JsonConvert.SerializeObject(new IdRequest { Id= id });
 			Console.WriteLine(myContent.ToString());
@@ -116,11 +107,10 @@ namespace CalculatorClient
 			float number;
 
 
-
+			Console.WriteLine("Sqrt...");
 			if (float.TryParse(Console.ReadLine(), out number))
 			{
-				if (number > 0)
-				{
+
 					SqrtRequest req = new SqrtRequest {
 					Number=number
 					};
@@ -131,16 +121,12 @@ namespace CalculatorClient
 					var byteContent = new ByteArrayContent(buffer);
 					byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-						byteContent.Headers.Add("X-Evi-Tracking-Id",idTracking);
+					byteContent.Headers.Add("X-Evi-Tracking-Id",idTracking);
 
 					var result = client.PostAsync("http://localhost:5000/sqrt", byteContent).Result;
 
-					Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
-				}
-				else
-				{
-					Console.WriteLine("Numero negativo");
-				}
+				Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
+
 			}
 			else
 			{
@@ -193,7 +179,7 @@ namespace CalculatorClient
 
 			numeros = ListaDeNumeros();
 
-			Add addens = new Add {
+			AddRequest addens = new AddRequest {
 				Addens = numeros
 			};
 
@@ -207,7 +193,7 @@ namespace CalculatorClient
 			var result = client.PostAsync("http://localhost:5000/sum", byteContent).Result;
 
 			Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
-			//Console.WriteLine("la suma es :"+numeros.Sum());
+
 
 		}
 		public static void Mul()
@@ -217,7 +203,7 @@ namespace CalculatorClient
 
 			numeros = ListaDeNumeros();
 
-			Mult factors = new Mult
+			MulRequest factors = new MulRequest
 			{
 				Factors = numeros
 			};
@@ -231,12 +217,11 @@ namespace CalculatorClient
 			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
 			var result = client.PostAsync("http://localhost:5000/mul", byteContent).Result;
 
-			Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
-
+			Console.WriteLine(JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result));
 
 		}
 
-		static void Sub()
+		public static void Sub()
 		{
 			float minuendo, substraendo;
 
@@ -248,7 +233,7 @@ namespace CalculatorClient
 				Console.WriteLine("subtraendo");
 				if (float.TryParse(Console.ReadLine(), out substraendo))
 				{
-					Sub sub = new Sub
+					SubRequest sub = new SubRequest
 					{
 					Minuend =minuendo,
 					Substrahen= substraendo
@@ -279,8 +264,7 @@ namespace CalculatorClient
 
 		}
 
-
-		static List<float> ListaDeNumeros()
+		public static List<float> ListaDeNumeros()
 		{
 			List<float> lista = new List<float>();
 			float val;

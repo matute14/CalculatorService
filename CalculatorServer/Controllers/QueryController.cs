@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Models;
+using Newtonsoft.Json;
+
 namespace CalculatorServer.Controllers
 {
 	[ApiController]
@@ -20,12 +19,31 @@ namespace CalculatorServer.Controllers
 		}
 
 		[HttpPost]
-		public OperationsRequest Query([FromBody] IdRequest id)
+		public string Query([FromBody] IdRequest id)
 		{
-
+			string response;
 			Console.WriteLine(id);
 
-			return Persistence.Oper[id.Id];
+			if (id == null)
+			{
+				Error error = new Error
+				{
+					ErrorCode = "Bad Request",
+					ErrorMessage = "Error id is null",
+					ErrorStatus = 400
+
+
+				};
+
+				response = JsonConvert.SerializeObject(error);
+				Response.StatusCode = error.ErrorStatus;
+			}
+			else
+			{
+				response = JsonConvert.SerializeObject(Persistence.Oper[id.Id]);
+			}
+
+			return response;
 		}
 	}
 }

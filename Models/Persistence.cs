@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+
 
 namespace Models
 {
@@ -11,6 +11,10 @@ namespace Models
 
 		public static void Add(string key, Operation operation)
 		{
+			if (key == null) {
+				throw new ArgumentNullException();
+			}
+
 			if (Oper.ContainsKey(key))
 			{
 				Oper[key].Operations.Add(operation);
