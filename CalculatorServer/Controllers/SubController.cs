@@ -25,7 +25,7 @@ namespace CalculatorServer.Controllers
 		[HttpPost]
 		public string Restar([FromBody] SubRequest sub)
 		{
-			_logger.LogInformation("User is sub");
+			_logger.LogInformation("Processing Sub");
 			var headers = Request.Headers;
 			string key = "";
 			StringValues values;
@@ -58,14 +58,14 @@ namespace CalculatorServer.Controllers
 			}
 			else
 			{
-				_logger.LogError("Error Bad Request Minuend & Substahen is null");
+				_logger.LogError("The request is invalid :Minuend & Substahen is null");
 				Error error = new Error
 				{
 					ErrorCode = "Bad Request",
 					ErrorMessage = "Error Minuend & subsatrahen is null",
 					ErrorStatus = 400
 				};
-				//throw DivideByZeroException();
+
 				Response.StatusCode = error.ErrorStatus;
 				response = JsonConvert.SerializeObject(error);
 			}

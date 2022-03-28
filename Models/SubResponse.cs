@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Models
 {
-	public class SubResponse
+	public class SubResponse : IOperation
 	{
 
 		[JsonPropertyName("Difference")]

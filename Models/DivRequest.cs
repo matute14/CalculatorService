@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Models
 {
-	public class DivRequest
+	public class DivRequest : IOperation
 	{
 		[JsonPropertyName("Dividend")]
 		public float? Dividend { get; set; }

@@ -29,6 +29,8 @@ namespace CalculatorServer.Controllers
 			string key = "";
 			var response = "";
 			StringValues values;
+
+			_logger.LogInformation("Processing Mul");
 			if (mult.Factors != null)
 			{
 				if (headers.ContainsKey("X-Evi-Tracking-Id"))
@@ -36,12 +38,13 @@ namespace CalculatorServer.Controllers
 					headers.TryGetValue("X-Evi-Tracking-Id", out values);
 					key = values.First();
 				}
-				List<float> lista = mult.Factors;
+				IEnumerable<float> lista = mult.Factors;
 
-				float factor = lista[0];
-				for (int i = 1; i < lista.Count; i++)
+				float factor = lista.First();
+
+				for (int i = 1; i < lista.Count(); i++)
 				{
-					factor *= lista[i];
+					factor *= lista.ElementAt(i);
 				}
 
 				MulResponse responseMul = new MulResponse
@@ -63,11 +66,12 @@ namespace CalculatorServer.Controllers
 
 
 				}
+				_logger.LogInformation("Processing Mul - DONE");
 				response = JsonConvert.SerializeObject(responseMul);
 			}
 			else
 			{
-				_logger.LogError("Bad request MulRequest is null");
+				_logger.LogError("The request is invalid: dividend or divisor is null");
 				Error error = new Error
 				{
 

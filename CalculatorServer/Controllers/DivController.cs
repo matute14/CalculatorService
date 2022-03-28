@@ -28,6 +28,7 @@ namespace CalculatorServer.Controllers
 			string repsonse = "";
 			DivResponse divResponse = new DivResponse();
 			StringValues values;
+			_logger.LogInformation("Processing Div");
 
 			if (headers.ContainsKey("X-Evi-Tracking-Id"))
 			{
@@ -36,7 +37,7 @@ namespace CalculatorServer.Controllers
 			}
 			if (div.Dividend.HasValue&& div.Divisor.HasValue)
 			{
-
+				_logger.LogError("Error Bad Request");
 				if (div.Divisor == 0)
 				{
 					Error error = new Error
@@ -67,13 +68,14 @@ namespace CalculatorServer.Controllers
 
 						Persistence.Add(key, p);
 					}
-					_logger.LogInformation("Div Succeess");
+					_logger.LogInformation("Processing Div - DONE");
 					repsonse = JsonConvert.SerializeObject(divResponse);
 
 				}
 			}
 			else
 			{
+				_logger.LogError("The request is invalid: dividend or divisor is null");
 				Error error = new Error
 				{
 					ErrorCode = "Bad Request",

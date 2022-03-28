@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Models
 {
-	public class Operation
+	public class Operation : IOperation
 	{
 		[JsonPropertyName("Operation")]
 		public string Oper { get; set; }

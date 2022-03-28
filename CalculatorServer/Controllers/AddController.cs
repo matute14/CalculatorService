@@ -45,7 +45,7 @@ namespace CalculatorServer.Controllers
 		[HttpPost]
 		public string Sumar([FromBody] AddRequest lista)
 		{
-			_logger.LogInformation("user add operation");
+			_logger.LogInformation("Processing Add");
 			var headers = Request.Headers;
 			string key="";
 			var response = "";
@@ -54,6 +54,7 @@ namespace CalculatorServer.Controllers
 			{
 				if (headers.ContainsKey("X-Evi-Tracking-Id"))
 				{
+
 					headers.TryGetValue("X-Evi-Tracking-Id", out values);
 					key = values.First();
 				}
@@ -63,7 +64,7 @@ namespace CalculatorServer.Controllers
 					Sum = lista.Addens.Sum()
 				};
 
-				if (!key.Equals(""))
+				if (!key.Equals(string.Empty))
 				{
 					Operation p = new Operation
 					{
@@ -74,13 +75,13 @@ namespace CalculatorServer.Controllers
 
 					Persistence.Add(key, p);
 				}
-				_logger.LogInformation("Add Succees");
+				_logger.LogInformation("Processing Add - DONE");
 				response = JsonConvert.SerializeObject(sum);
 
 			}
 			else
 			{
-				_logger.LogError("Bad request addens is null");
+				_logger.LogError("The request is invalid: addens is null");
 				Error error = new Error
 				{
 

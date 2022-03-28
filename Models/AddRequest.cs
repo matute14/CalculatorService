@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace Models
 {
-	public class AddRequest
+	public class AddRequest :IOperation
 	{
-		public List<float> Addens { get; set; }
+		public IEnumerable<float> Addens { get; set; }
 	}
 }

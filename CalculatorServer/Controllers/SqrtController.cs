@@ -21,9 +21,9 @@ namespace CalculatorServer.Controllers
 			_logger = logger;
 		}
 		[Microsoft.AspNetCore.Mvc.HttpPost]
-		public string Sqrt([System.Web.Http.FromBody] SqrtRequest sqrt) 
+		public string Sqrt([System.Web.Http.FromBody] SqrtRequest sqrt)
 		{
-			_logger.LogInformation("user using sqrt ");
+			_logger.LogInformation("Processing Sqrt ");
 			var headers = Request.Headers;
 			string key = "";
 			var response="";
@@ -42,6 +42,8 @@ namespace CalculatorServer.Controllers
 
 				if (sqrt.Number < 1)
 				{
+					_logger.LogError("The request is invalid: number<0");
+
 					Error error = new Error
 					{
 						ErrorCode = "Bad Request",
@@ -72,13 +74,13 @@ namespace CalculatorServer.Controllers
 						Persistence.Add(key, p);
 
 					}
-					_logger.LogInformation("Sqrt success");
+					_logger.LogInformation("Processing Sqrt - DONE");
 					response = JsonConvert.SerializeObject(sqrtresponse);
 				}
 			}
 			else
 			{
-				_logger.LogError("Error number is null ");
+				_logger.LogError("The request is invalid: is null");
 				Error error = new Error
 				{
 					ErrorCode = "Bad Request",

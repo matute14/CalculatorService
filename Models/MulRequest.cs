@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace Models
 {
-	public class MulRequest
+	public class MulRequest : IOperation
 	{
-		public List<float> Factors { get; set; }
+		public IEnumerable<float> Factors { get; set; }
 	}
 }

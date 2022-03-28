@@ -23,9 +23,10 @@ namespace CalculatorServer.Controllers
 		{
 			string response;
 			Console.WriteLine(id);
-
+			_logger.LogInformation("Processing history");
 			if (id == null)
 			{
+				_logger.LogError("The request is invalid: id is null");
 				Error error = new Error
 				{
 					ErrorCode = "Bad Request",
@@ -41,6 +42,7 @@ namespace CalculatorServer.Controllers
 			else
 			{
 				response = JsonConvert.SerializeObject(Persistence.Oper[id.Id]);
+				_logger.LogInformation("Processing Mul - DONE");
 			}
 
 			return response;

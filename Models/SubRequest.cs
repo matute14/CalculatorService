@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace Models
 {
-	public class SubRequest
+	public class SubRequest : IOperation
 	{
 		[JsonPropertyName("Minuend")]
 		public float? Minuend { get; set; }

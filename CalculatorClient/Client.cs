@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using Models;
+using System.Text;
 
 namespace CalculatorClient
 {
@@ -11,8 +12,9 @@ namespace CalculatorClient
 	public class Client
 	{
 
-		public static HttpClient client = new HttpClient();
-		public static string idTracking = "";
+		private static readonly HttpClient client = new HttpClient();
+		private static string idTracking = "";
+		private const string URL = "http://localhost:5000/";
 
 		public static void Main(string[] args)
 		{
@@ -25,30 +27,26 @@ namespace CalculatorClient
 			int opc;
 			do
 			{
-				Console.WriteLine(
-				@"0 Salir:
-				1 Suma:
-				2 Resta:
-				3 Multiplicacion
-				4 Division:
-				5 Raiz cuadrada:
-				6 Historial:");
+
+				var menuOptions = "0 Salir:" + "\n1 Suma:" + "\n2 Resta:" + "\n3 Resta:" + "\n3 Multiplicacion:" + "\n4 Division:" + "\n5 Raiz cuadrada:" + "\n1 Historial:";
+
+				Console.WriteLine(menuOptions);
 
 				Console.Write("quieres persistir las operaciones : ");
-				if (Console.ReadLine().Equals("s"))
+				if (Console.ReadLine().Equals("s", StringComparison.InvariantCultureIgnoreCase))
 				{
 					Console.Write("Dime id");
 					idTracking = Console.ReadLine();
 				}
-				Console.Write("Elija numero");
+				Console.Write("Elija opcion del meno");
 				string num = Console.ReadLine();
-				bool validacion = Int32.TryParse(num, out opc);
-				if (!validacion)
+				bool validate = Int32.TryParse(num, out opc);
+				if (!validate)
 				{
 					opc = -1;
 				}
 
-				if (validacion)
+				if (validate)
 				{
 
 
@@ -72,6 +70,9 @@ namespace CalculatorClient
 						case 6:
 							Query();
 							break;
+						default:
+							Console.WriteLine("No option in menu");
+							break;
 
 					}
 				}
@@ -83,13 +84,13 @@ namespace CalculatorClient
 		}
 		public static void  Query()
 		{
-			string id;
-
 			Console.WriteLine("Dime el id del que quieres ver historial");
-			id = Console.ReadLine();
+			var id = Console.ReadLine();
+			//DoRequest("query", new IdRequest { Id = id });
+
 			var myContent = JsonConvert.SerializeObject(new IdRequest { Id= id });
 			Console.WriteLine(myContent.ToString());
-			var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+			var buffer = Encoding.UTF8.GetBytes(myContent);
 			var byteContent = new ByteArrayContent(buffer);
 			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
@@ -104,28 +105,18 @@ namespace CalculatorClient
 		}
 		public static void Sqrt()
 		{
-			float number;
+			//float number;
 
 
 			Console.WriteLine("Sqrt...");
-			if (float.TryParse(Console.ReadLine(), out number))
+			if (float.TryParse(Console.ReadLine(), out var number))
 			{
 
-					SqrtRequest req = new SqrtRequest {
+					var req = new SqrtRequest {
 					Number=number
 					};
 
-					var myContent = JsonConvert.SerializeObject(req);
-					Console.WriteLine(myContent.ToString());
-					var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-					var byteContent = new ByteArrayContent(buffer);
-					byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-					byteContent.Headers.Add("X-Evi-Tracking-Id",idTracking);
-
-					var result = client.PostAsync("http://localhost:5000/sqrt", byteContent).Result;
-
-				Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
+					DoRequest("sqrt", req);
 
 			}
 			else
@@ -139,10 +130,10 @@ namespace CalculatorClient
 			float dividendo, divisor;
 			Console.WriteLine("Dividiendo...");
 
-			Console.Write("Dividendo...");
+			Console.Write("Dividendo:");
 			if (float.TryParse(Console.ReadLine(), out dividendo))
 			{
-				Console.Write("Divisor...");
+				Console.Write("Divisor:");
 				if (float.TryParse(Console.ReadLine(), out divisor))
 				{
 
@@ -151,15 +142,9 @@ namespace CalculatorClient
 						Dividend = dividendo,
 						Divisor = divisor
 					};
-					var myContent = JsonConvert.SerializeObject(div);
-					Console.WriteLine(myContent.ToString());
-					var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-					var byteContent = new ByteArrayContent(buffer);
-					byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-					byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-					var result = client.PostAsync("http://localhost:5000/div", byteContent).Result;
 
-					Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
+					DoRequest("div", div);
+
 
 				}
 
@@ -174,41 +159,45 @@ namespace CalculatorClient
 		}
 		public static void Sum()
 		{
-			List<float> numeros;
+			IEnumerable<float> numeros;
 			Console.WriteLine("Sumando...");
 
-			numeros = ListaDeNumeros();
+			numeros = GetNumbers();
 
 			AddRequest addens = new AddRequest {
 				Addens = numeros
 			};
 
+			DoRequest("sum", addens);
 
+			/*
 			var myContent = JsonConvert.SerializeObject(addens);
-			Console.WriteLine(myContent.ToString());
-			var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
+			Console.WriteLine(myContent);
+			var buffer = Encoding.UTF8.GetBytes(myContent);
 			var byteContent = new ByteArrayContent(buffer);
 			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
 			var result = client.PostAsync("http://localhost:5000/sum", byteContent).Result;
 
-			Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
-
+			Console.WriteLine(result.Content.ReadAsStringAsync().Result);
+			*/
 
 		}
 		public static void Mul()
 		{
-			List<float> numeros;
+
 			Console.WriteLine("Multiplicando...");
 
-			numeros = ListaDeNumeros();
+			var numeros = GetNumbers();
 
-			MulRequest factors = new MulRequest
+			IOperation factors = new MulRequest
 			{
 				Factors = numeros
 			};
 
+			DoRequest("mul", factors);
 
+			/*
 			var myContent = JsonConvert.SerializeObject(factors);
 			Console.WriteLine(myContent.ToString());
 			var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
@@ -218,12 +207,12 @@ namespace CalculatorClient
 			var result = client.PostAsync("http://localhost:5000/mul", byteContent).Result;
 
 			Console.WriteLine(JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result));
-
+			*/
 		}
 
 		public static void Sub()
 		{
-			float minuendo, substraendo;
+			float minuendo, substrahend;
 
 			Console.WriteLine("Restando...");
 
@@ -231,48 +220,46 @@ namespace CalculatorClient
 			if (float.TryParse(Console.ReadLine(), out minuendo))
 			{
 				Console.WriteLine("subtraendo");
-				if (float.TryParse(Console.ReadLine(), out substraendo))
+				if (float.TryParse(Console.ReadLine(), out substrahend))
 				{
-					SubRequest sub = new SubRequest
+					IOperation sub = new SubRequest
 					{
 					Minuend =minuendo,
-					Substrahen= substraendo
+					Substrahen= substrahend
 
 				};
-					var myContent = JsonConvert.SerializeObject(sub);
-					Console.WriteLine(myContent.ToString());
-					var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-					var byteContent = new ByteArrayContent(buffer);
-					byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-					byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-					var result = client.PostAsync("http://localhost:5000/sub", byteContent).Result;
-
-					Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
+					DoRequest("sub", sub);
 				}
 				else
 				{
 					Console.WriteLine("dato mal introducido");
 				}
-
 			}
 			else
 			{
 				Console.WriteLine("dato mal introducido");
 			}
-
-
-
 		}
-
-		public static List<float> ListaDeNumeros()
+		public static void DoRequest(string action,IOperation operation)
 		{
-			List<float> lista = new List<float>();
-			float val;
+			var myContent = JsonConvert.SerializeObject(operation);
+			Console.WriteLine(myContent);
+			var buffer = Encoding.UTF8.GetBytes(myContent);
+			var byteContent = new ByteArrayContent(buffer);
+			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
+			var result = client.PostAsync(URL+action, byteContent).Result;
+
+			Console.WriteLine(result.Content.ReadAsStringAsync().Result);
+		}
+		public static IEnumerable<float> GetNumbers()
+		{
+			var lista = new List<float>();
 			do
 			{
 				Console.WriteLine("Introduciendo Numeros");
 
-				if (float.TryParse(Console.ReadLine(), out val))
+				if (float.TryParse(Console.ReadLine(), out var val))
 				{
 					lista.Add(val);
 				}
@@ -282,7 +269,8 @@ namespace CalculatorClient
 				}
 
 				Console.WriteLine("quieres añadir un numero s/n");
-			} while (Console.ReadLine().Equals("s"));
+			}
+			while (Console.ReadLine().Trim().Equals("s",StringComparison.InvariantCultureIgnoreCase));
 
 			return lista;
 		}
