@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Models;
@@ -31,7 +32,7 @@ namespace CalculatorServer.Controllers
 				{
 					ErrorCode = "Bad Request",
 					ErrorMessage = "Error id is null",
-					ErrorStatus = 400
+					ErrorStatus = ((int)HttpStatusCode.BadRequest)
 
 
 				};

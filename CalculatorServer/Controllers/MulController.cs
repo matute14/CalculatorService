@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -33,9 +34,9 @@ namespace CalculatorServer.Controllers
 			_logger.LogInformation("Processing Mul");
 			if (mult.Factors != null)
 			{
-				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				if (headers.ContainsKey(Variables.KeyId))
 				{
-					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					headers.TryGetValue(Variables.KeyId, out values);
 					key = values.First();
 				}
 				IEnumerable<float> lista = mult.Factors;
@@ -52,9 +53,9 @@ namespace CalculatorServer.Controllers
 					Product = factor
 				};
 
-				if (!key.Equals(""))
+				if (!key.Equals(string.Empty))
 				{
-
+					_logger.LogInformation($"Processing persist operation {Variables.KeyId}= {key}");
 					Operation p = new Operation
 					{
 						Oper = "Mul",
@@ -77,9 +78,9 @@ namespace CalculatorServer.Controllers
 
 					ErrorCode = "Bad Request",
 					ErrorMessage = "Error addens is null",
-					ErrorStatus = 400
+					ErrorStatus = ((int)HttpStatusCode.BadRequest)
 				};
-				//throw DivideByZeroException();
+
 				Response.StatusCode = error.ErrorStatus;
 				response = JsonConvert.SerializeObject(error);
 			}

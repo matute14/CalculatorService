@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -16,60 +17,44 @@ namespace CalculatorServer.Controllers
 	{
 
 
-		/*
-		private static readonly string[] Summaries = new[]
-		{
-			"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-		};
-		*/
+
 		private readonly ILogger<AddController> _logger;
 
 		public AddController(ILogger<AddController> logger)
 		{
 			_logger = logger;
 		}
-		/*
-		[HttpGet]
-		public IEnumerable<WeatherForecast> Get()
-		{
-			var rng = new Random();
-			return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-			{
-				Date = DateTime.Now.AddDays(index),
-				TemperatureC = rng.Next(-20, 55),
-				Summary = Summaries[rng.Next(Summaries.Length)]
-			})
-			.ToArray();
-		}
-		*/
+
 		[HttpPost]
-		public string Sumar([FromBody] AddRequest lista)
+		public string Sumar([FromBody] AddRequest requestAdd)
 		{
 			_logger.LogInformation("Processing Add");
 			var headers = Request.Headers;
 			string key="";
 			var response = "";
 			StringValues values;
-			if (lista.Addens != null)
+			if (requestAdd.Addens != null)
 			{
-				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				if (headers.ContainsKey(Variables.KeyId))
 				{
 
-					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					headers.TryGetValue(Variables.KeyId, out values);
 					key = values.First();
 				}
 
 				AddResponse sum = new AddResponse
 				{
-					Sum = lista.Addens.Sum()
+					Sum = requestAdd.Addens.Sum()
 				};
 
 				if (!key.Equals(string.Empty))
 				{
+					_logger.LogInformation($"Processing persist operation {Variables.KeyId}= {key}");
+
 					Operation p = new Operation
 					{
 						Oper = "Sum",
-						Calculation = string.Join("+", lista.Addens) + "=" + sum.Sum,
+						Calculation = string.Join("+", requestAdd.Addens) + "=" + sum.Sum,
 						Date = DateTime.Now.ToString()
 					};
 
@@ -87,7 +72,7 @@ namespace CalculatorServer.Controllers
 
 					ErrorCode = "Bad Request",
 					ErrorMessage = "Error addens is null",
-					ErrorStatus = 400
+					ErrorStatus = ((int)HttpStatusCode.BadRequest)
 				};
 				//throw DivideByZeroException();
 				Response.StatusCode = error.ErrorStatus;

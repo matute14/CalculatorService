@@ -12,7 +12,7 @@ namespace Models
 		public static void Add(string key, Operation operation)
 		{
 			if (key == null) {
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("id is null");
 			}
 
 			if (Oper.ContainsKey(key))

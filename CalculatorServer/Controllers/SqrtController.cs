@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -20,7 +21,7 @@ namespace CalculatorServer.Controllers
 		{
 			_logger = logger;
 		}
-		[Microsoft.AspNetCore.Mvc.HttpPost]
+		[HttpPost]
 		public string Sqrt([System.Web.Http.FromBody] SqrtRequest sqrt)
 		{
 			_logger.LogInformation("Processing Sqrt ");
@@ -34,9 +35,9 @@ namespace CalculatorServer.Controllers
 					Square = 0
 				};
 				StringValues values;
-				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				if (headers.ContainsKey(Variables.KeyId))
 				{
-					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					headers.TryGetValue(Variables.KeyId, out values);
 					key = values.First();
 				}
 
@@ -48,7 +49,7 @@ namespace CalculatorServer.Controllers
 					{
 						ErrorCode = "Bad Request",
 						ErrorMessage = "Error cant do a negative square root",
-						ErrorStatus = 400
+						ErrorStatus = ((int)HttpStatusCode.BadRequest)
 
 					};
 
@@ -63,8 +64,10 @@ namespace CalculatorServer.Controllers
 						Square = (float)Math.Sqrt(sqrt.Number.Value)
 					};
 
-					if (!key.Equals(""))
+					if (!key.Equals(string.Empty))
 					{
+						_logger.LogInformation($"Processing persist operation {Variables.KeyId}= {key}");
+
 						Operation p = new Operation
 						{
 							Calculation = "Sqrt",
