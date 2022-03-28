@@ -1,15 +1,15 @@
 # CalculatorService
-Coding challenge calculator service
-Solucion calculadora 
-El codigo de la aplicacion esta hecho en c# usando .net Core 3.1 
-Composicion
-tiene una aplicacion de consola en la cual esta integrada el cliente,
-El cliente tiene un menu donde eliges la opcion del menu deseada 
-Y pregunta por si quieres persistir las operaciones para opcionalmente ver el historial de operaciones 
+Coding Challenge Calculator Service
+calculator solution
+The application code is made in c# using .net core 3.1
+Composition
+has a console application in which the client is integrated,
+The client has a menu where he chooses the desired menu option
+And it asks if you want to persist them to optionally see the history of operations
 
-Una aplicacion de servidor que es donde tiene los controladores que van a comunicarse con el cliente
-mediante JSON las respuestas y las peticiones se hacen mediante objetos serializados con  JSON ya que es una API REST
+A server application that is where you have the controllers that are going to communicate with the client
+through JSON the responses and requests are made through objects serialized with JSON since it is a REST API
 
-Otra solucion que sirve de libreria para tener los modelos de respuesta y peticion 
+Another solution that serves as a library to have the response and request models
 
-Para el despligue de la aplicacion sera necesario arrancar las soluciones de CalculatorClient y CalculatorServer
+For the deployment of the application it will be necessary to start the CalculatorClient and CalculatorServer solutions
