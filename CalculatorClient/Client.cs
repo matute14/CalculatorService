@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Models;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace CalculatorClient
 {
@@ -31,7 +32,7 @@ namespace CalculatorClient
 			Menu();
 		}
 
-		public static void Menu()
+		private static void Menu()
 		{
 
 			int opc;
@@ -93,14 +94,14 @@ namespace CalculatorClient
 
 
 		}
-		public static void  Query()
+		internal static void  Query()
 		{
 			Console.WriteLine("Dime el id del que quieres ver historial");
 			var id = Console.ReadLine();
 			DoRequest("query", new IdRequest { Id = id });
 
 		}
-		public static void Sqrt()
+		internal static void Sqrt()
 		{
 
 			Console.WriteLine("Sqrt... \n Dime un numero");
@@ -111,8 +112,14 @@ namespace CalculatorClient
 				var req = new SqrtRequest {
 					Number=number
 				};
+			#if DEBUG
 
-				DoRequest("sqrt", req);
+				Console.WriteLine(Math.Sqrt(number));
+			#else
+					DoRequest("sqrt", req);
+
+			#endif
+
 
 			}
 			else
@@ -121,7 +128,7 @@ namespace CalculatorClient
 			}
 
 		}
-		public static void Division()
+		internal static void Division()
 		{
 			float dividendo, divisor;
 			Console.WriteLine("Dividiendo...");
@@ -138,10 +145,13 @@ namespace CalculatorClient
 						Dividend = dividendo,
 						Divisor = divisor
 					};
-
+				#if DEBUG
+					Console.WriteLine();
+					Console.WriteLine(dividendo / divisor);
+				#else
 					DoRequest("div", div);
 
-
+				#endif
 				}
 
 			}
@@ -153,7 +163,7 @@ namespace CalculatorClient
 
 
 		}
-		public static void Sum()
+		internal static void Sum()
 		{
 			IEnumerable<float> numeros;
 			Console.WriteLine("Sumando...");
@@ -164,10 +174,18 @@ namespace CalculatorClient
 				Addens = numeros
 			};
 
+			#if DEBUG
+
+			Console.WriteLine(addens.Addens.Sum() );
+			#else
 			DoRequest("sum", addens);
 
+			#endif
+
+
+
 		}
-		public static void Mul()
+		internal static void Mul()
 		{
 
 			Console.WriteLine("Multiplicando...");
@@ -179,12 +197,25 @@ namespace CalculatorClient
 				Factors = numeros
 			};
 
+
+#if DEBUG
+
+			var factor = numeros.First();
+
+			for (int i = 1; i < numeros.Count(); i++)
+			{
+				factor *= numeros.ElementAt(i);
+			}
+
+			Console.WriteLine(factor);
+#else
 			DoRequest("mul", factors);
 
+#endif
 
 		}
 
-		public static void Sub()
+		internal static void Sub()
 		{
 			float minuendo, substrahend;
 
@@ -202,7 +233,14 @@ namespace CalculatorClient
 					Substrahen= substrahend
 
 				};
+#if DEBUG
+					Console.WriteLine(minuendo-substrahend);
+				#else
 					DoRequest("sub", sub);
+				#endif
+
+
+
 				}
 				else
 				{
@@ -214,7 +252,9 @@ namespace CalculatorClient
 				Console.WriteLine("dato mal introducido");
 			}
 		}
-		public static void DoRequest(string action,IOperation operation)
+
+
+		internal static void DoRequest(string action,IOperation operation)
 		{
 			try
 			{
@@ -233,7 +273,8 @@ namespace CalculatorClient
 			}
 
 		}
-		public static IEnumerable<float> GetNumbers()
+
+		internal static IEnumerable<float> GetNumbers()
 		{
 			var lista = new List<float>();
 			do

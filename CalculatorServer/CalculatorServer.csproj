@@ -15,5 +15,8 @@
     <ProjectReference Include="..\Models\Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleToSuffix Include=".Tests" /> <!-- [assembly: InternalsVisibleTo("CalculatorClient.Tests")] -->
+  </ItemGroup>
 
 </Project>
