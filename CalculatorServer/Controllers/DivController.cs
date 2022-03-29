@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -30,9 +31,9 @@ namespace CalculatorServer.Controllers
 			StringValues values;
 			_logger.LogInformation("Processing Div");
 
-			if (headers.ContainsKey("X-Evi-Tracking-Id"))
+			if (headers.ContainsKey(Variables.KeyId))
 			{
-				headers.TryGetValue("X-Evi-Tracking-Id", out values);
+				headers.TryGetValue(Variables.KeyId, out values);
 				key = values.First();
 			}
 			if (div.Dividend.HasValue&& div.Divisor.HasValue)
@@ -44,9 +45,9 @@ namespace CalculatorServer.Controllers
 					{
 						ErrorCode = "Bad Request",
 						ErrorMessage = "Error cant do a negative square root",
-						ErrorStatus = 400
+						ErrorStatus = ((int)HttpStatusCode.BadRequest)
 					};
-					//throw DivideByZeroException();
+
 					Response.StatusCode = error.ErrorStatus;
 					repsonse = JsonConvert.SerializeObject(error);
 				}
@@ -56,9 +57,9 @@ namespace CalculatorServer.Controllers
 					divResponse.Quotient = (float)Math.Floor(div.Dividend.Value / div.Divisor.Value);
 					divResponse.Remainder = div.Dividend.Value % div.Divisor.Value;
 
-					if (!key.Equals(""))
+					if (!key.Equals(string.Empty))
 					{
-						_logger.LogTrace("Persist div");
+						_logger.LogInformation($"Processing persist operation {Variables.KeyId}= {key}");
 						Operation p = new Operation
 						{
 							Oper = "Div",
@@ -82,7 +83,7 @@ namespace CalculatorServer.Controllers
 					ErrorMessage = "Error dividen & divisor is null",
 					ErrorStatus = 400
 				};
-				//throw DivideByZeroException();
+
 				Response.StatusCode = error.ErrorStatus;
 				repsonse = JsonConvert.SerializeObject(error);
 			}
@@ -90,9 +91,6 @@ namespace CalculatorServer.Controllers
 
 		}
 
-		private Exception DivideByZeroException()
-		{
-			throw new NotImplementedException();
-		}
+
 	}
 }

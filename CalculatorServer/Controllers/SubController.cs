@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -32,9 +33,9 @@ namespace CalculatorServer.Controllers
 			var response="";
 			if (sub.Minuend.HasValue && sub.Substrahen.HasValue)
 			{
-				if (headers.ContainsKey("X-Evi-Tracking-Id"))
+				if (headers.ContainsKey(Variables.KeyId))
 				{
-					headers.TryGetValue("X-Evi-Tracking-Id", out values);
+					headers.TryGetValue(Variables.KeyId, out values);
 					key = values.First();
 				}
 				SubResponse restaResponse = new SubResponse
@@ -42,8 +43,10 @@ namespace CalculatorServer.Controllers
 					Difference = sub.Minuend.Value - sub.Substrahen.Value
 				};
 
-				if (!key.Equals(""))
+				if (!key.Equals(string.Empty))
 				{
+
+					_logger.LogInformation($"Processing persist operation {Variables.KeyId}= {key}");
 					Operation p = new Operation
 					{
 						Oper = "Sub",
@@ -63,7 +66,7 @@ namespace CalculatorServer.Controllers
 				{
 					ErrorCode = "Bad Request",
 					ErrorMessage = "Error Minuend & subsatrahen is null",
-					ErrorStatus = 400
+					ErrorStatus = ((int)HttpStatusCode.BadRequest)
 				};
 
 				Response.StatusCode = error.ErrorStatus;

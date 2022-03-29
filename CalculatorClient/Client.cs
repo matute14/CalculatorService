@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using Models;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace CalculatorClient
 {
@@ -16,6 +17,15 @@ namespace CalculatorClient
 		private static string idTracking = "";
 		private const string URL = "http://localhost:5000/";
 
+
+
+		private  readonly ILogger<Client> _logger;
+
+		public Client(ILogger<Client> logger)
+		{
+			_logger = logger;
+		}
+
 		public static void Main(string[] args)
 		{
 			Menu();
@@ -25,20 +35,21 @@ namespace CalculatorClient
 		{
 
 			int opc;
+
+			Console.Write("Quieres persistir las operaciónes : (s/n) ");
+			if (Console.ReadLine().Equals("s", StringComparison.InvariantCultureIgnoreCase))
+			{
+				Console.Write("Dime id : ");
+				idTracking = Console.ReadLine();
+			}
 			do
 			{
 
-				var menuOptions = "0 Salir:" + "\n1 Suma:" + "\n2 Resta:" + "\n3 Resta:" + "\n3 Multiplicacion:" + "\n4 Division:" + "\n5 Raiz cuadrada:" + "\n1 Historial:";
+				var menuOptions = "0 Salir:" + "\n1 Suma:" + "\n2 Resta:" + "\n3 Resta:" + "\n3 Multiplicacion:" + "\n4 Division:" + "\n5 Raiz cuadrada:" + "\n6 Historial:";
 
 				Console.WriteLine(menuOptions);
 
-				Console.Write("quieres persistir las operaciones : ");
-				if (Console.ReadLine().Equals("s", StringComparison.InvariantCultureIgnoreCase))
-				{
-					Console.Write("Dime id");
-					idTracking = Console.ReadLine();
-				}
-				Console.Write("Elija opcion del meno");
+				Console.Write("Elija opcion del menu : ");
 				string num = Console.ReadLine();
 				bool validate = Int32.TryParse(num, out opc);
 				if (!validate)
@@ -49,10 +60,10 @@ namespace CalculatorClient
 				if (validate)
 				{
 
-
 					switch (opc)
 					{
 						case 1:
+
 							Sum();
 							break;
 						case 2:
@@ -86,37 +97,22 @@ namespace CalculatorClient
 		{
 			Console.WriteLine("Dime el id del que quieres ver historial");
 			var id = Console.ReadLine();
-			//DoRequest("query", new IdRequest { Id = id });
-
-			var myContent = JsonConvert.SerializeObject(new IdRequest { Id= id });
-			Console.WriteLine(myContent.ToString());
-			var buffer = Encoding.UTF8.GetBytes(myContent);
-			var byteContent = new ByteArrayContent(buffer);
-			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-
-			var result = client.PostAsync("http://localhost:5000/query", byteContent).Result;
-
-			Console.WriteLine(result.Content.ReadAsStringAsync().Result.ToString());
-
-
+			DoRequest("query", new IdRequest { Id = id });
 
 		}
 		public static void Sqrt()
 		{
-			//float number;
 
+			Console.WriteLine("Sqrt... \n Dime un numero");
 
-			Console.WriteLine("Sqrt...");
 			if (float.TryParse(Console.ReadLine(), out var number))
 			{
 
-					var req = new SqrtRequest {
+				var req = new SqrtRequest {
 					Number=number
-					};
+				};
 
-					DoRequest("sqrt", req);
+				DoRequest("sqrt", req);
 
 			}
 			else
@@ -170,18 +166,6 @@ namespace CalculatorClient
 
 			DoRequest("sum", addens);
 
-			/*
-			var myContent = JsonConvert.SerializeObject(addens);
-			Console.WriteLine(myContent);
-			var buffer = Encoding.UTF8.GetBytes(myContent);
-			var byteContent = new ByteArrayContent(buffer);
-			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-			var result = client.PostAsync("http://localhost:5000/sum", byteContent).Result;
-
-			Console.WriteLine(result.Content.ReadAsStringAsync().Result);
-			*/
-
 		}
 		public static void Mul()
 		{
@@ -197,17 +181,7 @@ namespace CalculatorClient
 
 			DoRequest("mul", factors);
 
-			/*
-			var myContent = JsonConvert.SerializeObject(factors);
-			Console.WriteLine(myContent.ToString());
-			var buffer = System.Text.Encoding.UTF8.GetBytes(myContent);
-			var byteContent = new ByteArrayContent(buffer);
-			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-			var result = client.PostAsync("http://localhost:5000/mul", byteContent).Result;
 
-			Console.WriteLine(JsonConvert.DeserializeObject<dynamic>(result.Content.ReadAsStringAsync().Result));
-			*/
 		}
 
 		public static void Sub()
@@ -242,15 +216,22 @@ namespace CalculatorClient
 		}
 		public static void DoRequest(string action,IOperation operation)
 		{
-			var myContent = JsonConvert.SerializeObject(operation);
-			Console.WriteLine(myContent);
-			var buffer = Encoding.UTF8.GetBytes(myContent);
-			var byteContent = new ByteArrayContent(buffer);
-			byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			byteContent.Headers.Add("X-Evi-Tracking-Id", idTracking);
-			var result = client.PostAsync(URL+action, byteContent).Result;
+			try
+			{
+				var myContent = JsonConvert.SerializeObject(operation);
+				Console.WriteLine(myContent);
+				var buffer = Encoding.UTF8.GetBytes(myContent);
+				var byteContent = new ByteArrayContent(buffer);
+				byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+				byteContent.Headers.Add(Variables.KeyId, idTracking);
+				var result = client.PostAsync(URL + action, byteContent).Result;
+				Console.WriteLine(result.Content.ReadAsStringAsync().Result);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
 
-			Console.WriteLine(result.Content.ReadAsStringAsync().Result);
 		}
 		public static IEnumerable<float> GetNumbers()
 		{
